@@ -17,7 +17,7 @@ protected:
 	}
 
 	virtual void forwards_impl(
-		size_t n,	const std::complex<double> &/*wn*/,
+		size_t n,	const std::complex<double> &wn,
 		const std::complex<double> *pIn, size_t sIn,
 		std::complex<double> *pOut, size_t sOut
 	) const 
@@ -40,7 +40,7 @@ protected:
 	}
 	
 	virtual void backwards_impl(
-		size_t n,	const std::complex<double> &/*wn*/,
+		size_t n,	const std::complex<double> &wn,
 		const std::complex<double> *pIn, size_t sIn,
 		std::complex<double> *pOut, size_t sOut
 	) const 

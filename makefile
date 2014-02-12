@@ -1,6 +1,6 @@
 # Makefile for posix and gcc
 
-# Note on old compilers  *cough*  DoC  *cough* you might need -std=c++0x instead
+CXX=clang++
 CPPFLAGS = -I include -Wall -std=c++11
 LDFLAGS = 
 LDLIBS = -lm -ltbb
@@ -8,13 +8,13 @@ LDLIBS = -lm -ltbb
 # Turn on optimisations
 CPPFLAGS += -O2
 
-# TODO : Indicate where you have put the TBB installer
-TBB_DIR = <where-is-it?>
+# Indicate where you have put the TBB installer
+TBB_DIR = /home/kryu/studies/HPCE/cw3/tbb42_20131118oss
 
 TBB_INC_DIR = $(TBB_DIR)/include
 
-# TODO: Choose the correct library for your build
-TBB_LIB_DIR = $(TBB_DIR)/lib/intel64/gcc4.4
+# Choose the correct library for your build
+TBB_LIB_DIR = $(TBB_DIR)/build/linux_intel64_gcc_cc4.7_libc2.13_kernel3.2.0_release
 
 CPPFLAGS += -I $(TBB_INC_DIR)
 LDFLAGS += -L $(TBB_LIB_DIR)

@@ -10,6 +10,11 @@ namespace hpce
 
 namespace rs5010
 {
+    
+// parallelisation thresholds
+const unsigned int M = 1<<12; // backwards fft bin scaling
+const unsigned int K = 1<<12; // outer merge loop
+const unsigned int L = 1<<10; // recursive splits
 
 class fast_fourier_transform_opt
 	: public fourier_transform
@@ -44,20 +49,24 @@ protected:
 		}else{
 			size_t m = n/2;
 
-      tbb::task_group grp;
+      // parallel or serial recursion
+      if (m>L){
+        tbb::task_group grp;
 
-			grp.run( [=]{forwards_impl(m,wn*wn,pIn,2*sIn,pOut,sOut);} );
-			grp.run( [=]{forwards_impl(m,wn*wn,pIn+sIn,2*sIn,pOut+sOut*m,sOut);} );
-			  
-      grp.wait();
-			 
-      size_t K = (m<8)?m:8;
-      //size_t K = (m<64)?m:64;
+        grp.run( [=]{forwards_impl(m,wn*wn,pIn,2*sIn,pOut,sOut);} );
+        grp.run( [=]{forwards_impl(m,wn*wn,pIn+sIn,2*sIn,pOut+sOut*m,sOut);} );
+          
+        grp.wait();
+      }
+      else {
+        forwards_impl(m,wn*wn,pIn,2*sIn,pOut,sOut);
+        forwards_impl(m,wn*wn,pIn+sIn,2*sIn,pOut+sOut*m,sOut);
+      }
+
 
       auto outer_loop = [=](unsigned j0){
         std::complex<double> w=std::pow(wn,(j0*K));
-        for (size_t j1=0; j1<K; j1++){
-          size_t j=j0*K+j1;
+        for (size_t j=j0*K; j<(j0+1)*K; ++j) {
           std::complex<double> t1 = w*pOut[m+j];
           std::complex<double> t2 = pOut[j]-t1;
           pOut[j] = pOut[j]+t1;                 
@@ -65,7 +74,20 @@ protected:
           w = w*wn;
         }
       };
-      tbb::parallel_for(size_t(0), m/K, outer_loop);
+
+      // parallel or serial merge loop
+      if (m>K)
+        tbb::parallel_for(size_t(0), m/K, outer_loop);
+      else {
+        std::complex<double> w=std::complex<double>(1.0, 0.0);
+        for (size_t j=0; j<m; ++j) {
+          std::complex<double> t1 = w*pOut[m+j];
+          std::complex<double> t2 = pOut[j]-t1;
+          pOut[j] = pOut[j]+t1;                 
+          pOut[j+m] = t2;                          
+          w = w*wn;
+        }
+      }
     }
   }
 	
@@ -79,9 +101,19 @@ protected:
 		forwards_impl(n, reverse_wn, pIn, sIn, pOut, sOut);
 		
 		double scale=1.0/n;
-		for(size_t i=0;i<n;i++){
-			pOut[i]=pOut[i]*scale;
-		}
+    
+    // parallelise if sufficient problem size
+    if (n>=M){
+      tbb::parallel_for(size_t(0), n/M, [=](unsigned j){
+        for(size_t i=0;i<M;++i)
+          pOut[j*(M)+i]=pOut[j*(M)+i]*scale;
+      });
+    }
+    else{
+      for(size_t i=0;i<n;i++){
+        pOut[i]=pOut[i]*scale;
+      }
+    }
 	}
 	
 public:

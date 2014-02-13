@@ -88,7 +88,6 @@ protected:
 		forwards_impl(n, reverse_wn, pIn, sIn, pOut, sOut);
 		
 		double scale=1.0/n;
-    // note: should be vectorised by default. Could add both parallelism and vectorisation for large problem sizes (running on large node counts)
 		for(size_t i=0;i<n;i++){
 			pOut[i]=pOut[i]*scale;
 		}

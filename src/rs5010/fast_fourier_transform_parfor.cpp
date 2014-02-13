@@ -45,13 +45,13 @@ protected:
 
 			forwards_impl(m,wn*wn,pIn,2*sIn,pOut,sOut);
 			forwards_impl(m,wn*wn,pIn+sIn,2*sIn,pOut+sOut*m,sOut);
-			 
-      size_t K = (m<8)?m:8;
+      
+      size_t K = 1<<3;
 
       auto outer_loop = [=](unsigned j0){
         std::complex<double> w=std::pow(wn,(j0*K));
-        for (size_t j1=0; j1<K; j1++){
-          size_t j=j0*K+j1;
+        for (size_t j=j0*K; j<(j0+1)*K; ++j)
+        {
           std::complex<double> t1 = w*pOut[m+j];
           std::complex<double> t2 = pOut[j]-t1;
           pOut[j] = pOut[j]+t1;                 
@@ -59,9 +59,24 @@ protected:
           w = w*wn;
         }
       };
-      tbb::parallel_for(size_t(0), m/K, outer_loop);
+
+      if (m>K)
+        tbb::parallel_for(size_t(0), m/K, outer_loop);
+      else
+      {
+        std::complex<double> w=std::complex<double>(1.0, 0.0);
+        for (size_t j=0; j<m; ++j)
+        {
+          std::complex<double> t1 = w*pOut[m+j];
+          std::complex<double> t2 = pOut[j]-t1;
+          pOut[j] = pOut[j]+t1;                 
+          pOut[j+m] = t2;                          
+          w = w*wn;
+        }
+      }
     }
   }
+			 
 	
 	virtual void backwards_impl(
 		size_t n,	const std::complex<double> &wn,
@@ -73,6 +88,7 @@ protected:
 		forwards_impl(n, reverse_wn, pIn, sIn, pOut, sOut);
 		
 		double scale=1.0/n;
+    // note: should be vectorised by default. Could add both parallelism and vectorisation for large problem sizes (running on large node counts)
 		for(size_t i=0;i<n;i++){
 			pOut[i]=pOut[i]*scale;
 		}

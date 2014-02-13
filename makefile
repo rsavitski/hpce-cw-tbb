@@ -6,7 +6,7 @@ LDFLAGS =
 LDLIBS = -lm -ltbb
 
 # Turn on optimisations
-CPPFLAGS += -O2
+CPPFLAGS += -O3 -DNDEBUG
 
 # Indicate where you have put the TBB installer
 TBB_DIR = /home/kryu/studies/HPCE/cw3/tbb42_20131118oss

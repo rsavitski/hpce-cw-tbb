@@ -13,6 +13,7 @@ namespace rs5010{
 	std::shared_ptr<fourier_transform> Create_fast_fourier_transform_taskgroup();
 	std::shared_ptr<fourier_transform> Create_fast_fourier_transform_parfor();
 	std::shared_ptr<fourier_transform> Create_fast_fourier_transform_combined();
+	std::shared_ptr<fourier_transform> Create_fast_fourier_transform_opt();
 }
 
 
@@ -27,6 +28,7 @@ void fourier_transform::RegisterDefaultFactories()
 	RegisterTransformFactory("hpce.rs5010.fast_fourier_transform_taskgroup", hpce::rs5010::Create_fast_fourier_transform_taskgroup);
 	RegisterTransformFactory("hpce.rs5010.fast_fourier_transform_parfor", hpce::rs5010::Create_fast_fourier_transform_parfor);
 	RegisterTransformFactory("hpce.rs5010.fast_fourier_transform_combined", hpce::rs5010::Create_fast_fourier_transform_combined);
+	RegisterTransformFactory("hpce.rs5010.fast_fourier_transform_opt", hpce::rs5010::Create_fast_fourier_transform_opt);
 }
 	
 }; // namespace hpce

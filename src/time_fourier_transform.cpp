@@ -83,11 +83,12 @@ int main(int argc, char *argv[])
 		// This is the number of parallel tasks that TBB will support
 		tbb::task_scheduler_init task_init(allowedP);
 		
-		double log2n=4;
+    //TODO: NOT DEFAULT
+		double log2n=18;
 		
 		std::cout<<"# name, allowedP, trueP, n, [sentinel], time\n";
 		
-		while(log2n <= 26){	// Try not to blow up memory system
+		while(log2n <= 22){	// Try not to blow up memory system
 			size_t n=(size_t)std::pow(2.0, log2n);
 			
 			// Set up random numbers between -1 and +1
@@ -116,7 +117,7 @@ int main(int argc, char *argv[])
 				break;
 			}
 			
-			log2n+=0.25;
+			log2n+=1;
 		}
 		
 		return 0;
